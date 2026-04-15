@@ -520,143 +520,6 @@
   }
 
 
-  /* COMMENTS */
-  .comments-section {
-    padding: 0.9rem 1.2rem;
-    border-top: 1px dashed var(--parchment-deeper);
-    margin-top: 0.5rem;
-  }
-
-  .comments-title {
-    font-family: 'Cinzel', serif;
-    font-size: 0.68rem;
-    color: var(--burgundy);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    margin-bottom: 0.7rem;
-    font-weight: 600;
-  }
-
-  .comment-item {
-    margin-bottom: 0.7rem;
-    padding-bottom: 0.7rem;
-    border-bottom: 1px dashed rgba(212,184,150,0.4);
-  }
-  .comment-item:last-child { border-bottom: none; margin-bottom: 0; }
-
-  .comment-header {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    margin-bottom: 0.25rem;
-  }
-
-  .comment-avatar {
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    border: 1px solid var(--gold);
-    object-fit: cover;
-    flex-shrink: 0;
-  }
-
-  .comment-avatar-placeholder {
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    background: var(--burgundy);
-    color: var(--gold-pale);
-    font-size: 0.6rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Cinzel', serif;
-    flex-shrink: 0;
-  }
-
-  .comment-user {
-    font-family: 'Crimson Pro', serif;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--burgundy);
-  }
-
-  .comment-date {
-    font-size: 0.72rem;
-    color: var(--ink-light);
-    opacity: 0.5;
-    font-style: italic;
-    margin-left: auto;
-  }
-
-  .comment-text {
-    font-family: 'Crimson Pro', serif;
-    font-size: 0.92rem;
-    color: var(--ink-light);
-    line-height: 1.55;
-    font-weight: 300;
-  }
-
-  .comment-input-area {
-    margin-top: 0.7rem;
-  }
-
-  .comment-input {
-    width: 100%;
-    background: var(--parchment);
-    border: 1px solid var(--parchment-deeper);
-    border-radius: 2px;
-    padding: 0.45rem 0.7rem;
-    font-family: 'Crimson Pro', serif;
-    font-size: 0.92rem;
-    color: var(--ink);
-    outline: none;
-    resize: none;
-    min-height: 58px;
-    transition: border-color 0.2s;
-  }
-  .comment-input:focus { border-color: var(--gold); }
-
-  .comment-submit {
-    margin-top: 0.4rem;
-    background: var(--burgundy);
-    color: var(--gold-pale);
-    border: none;
-    outline: 1px solid var(--gold);
-    outline-offset: -1px;
-    font-family: 'Cinzel', serif;
-    font-size: 0.66rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    padding: 0.4rem 1rem;
-    border-radius: 2px;
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: all 0.2s;
-    float: right;
-  }
-  .comment-submit:hover { background: var(--burgundy-light); color: #fff; }
-
-  .comment-empty {
-    font-family: 'Crimson Pro', serif;
-    font-size: 0.88rem;
-    color: var(--ink-light);
-    font-style: italic;
-    opacity: 0.6;
-    text-align: center;
-    padding: 0.5rem 0;
-  }
-
-  .comment-login-prompt {
-    font-family: 'Crimson Pro', serif;
-    font-size: 0.85rem;
-    color: var(--ink-light);
-    font-style: italic;
-    opacity: 0.7;
-    cursor: pointer;
-    text-decoration: underline;
-    text-decoration-style: dashed;
-  }
-  .comment-login-prompt:hover { color: var(--burgundy); }
-
   /* MOBILE */
   @media (max-width: 880px) {
     .side-panel { order: -1; }
@@ -828,11 +691,6 @@
             <p class="suggestion-note">5 kişi aynı öneriyi yaparsa koordinat otomatik güncellenir.</p>
             <button class="suggestion-submit" onclick="submitSuggestion()">Öneriyi Gönder ✦</button>
           </div>
-        <div class="comments-section" id="comments-section" style="display:none;">
-          <div class="comments-title">💬 &nbsp;Yorumlar</div>
-          <div id="comments-list"></div>
-          <div class="comment-input-area" id="comment-input-area"></div>
-        </div>
         </div>
       </div>
 
@@ -1247,7 +1105,6 @@ function selectEntry(id){
   document.getElementById('report-btn').textContent=isReported?'⚑ Bildirildi':'⚑ Bildir';
   document.getElementById('report-btn').classList.toggle('reported',isReported);
   renderVoteArea();
-  loadComments(id);
   renderChart(); renderSideLists();
 }
 
@@ -1302,74 +1159,6 @@ async function submitSuggestion(){
   showToast('Önerin gönderildi! 5 kişi aynı öneriyi yaparsa güncellenir. ✦');
   await loadEntries();
   selectEntry(selectedId);
-}
-
-// ── COMMENTS ─────────────────────────────────────
-async function loadComments(entryId) {
-  const { data } = await sb.from('comments')
-    .select('*')
-    .eq('entry_id', entryId)
-    .order('created_at', { ascending: true });
-
-  const section = document.getElementById('comments-section');
-  const list = document.getElementById('comments-list');
-  const inputArea = document.getElementById('comment-input-area');
-  section.style.display = 'block';
-
-  if (!data || data.length === 0) {
-    list.innerHTML = '<div class="comment-empty">Henüz yorum yok. İlk yorumu sen yap!</div>';
-  } else {
-    list.innerHTML = data.map(c => {
-      const date = new Date(c.created_at).toLocaleDateString('tr-TR', { day:'numeric', month:'short' });
-      const initial = (c.user_name||'?')[0].toUpperCase();
-      return `
-        <div class="comment-item">
-          <div class="comment-header">
-            ${c.user_avatar
-              ? `<img class="comment-avatar" src="${c.user_avatar}" alt="${c.user_name}">`
-              : `<div class="comment-avatar-placeholder">${initial}</div>`}
-            <span class="comment-user">${c.user_name || 'Misafir'}</span>
-            <span class="comment-date">${date}</span>
-          </div>
-          <div class="comment-text">${c.content}</div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  if (currentUser) {
-    inputArea.innerHTML = `
-      <textarea class="comment-input" id="comment-text" placeholder="Düşünceni yaz…"></textarea>
-      <button class="comment-submit" onclick="submitComment()">Gönder ✦</button>
-      <div style="clear:both"></div>
-    `;
-  } else {
-    inputArea.innerHTML = `
-      <span class="comment-login-prompt" onclick="signInWithGoogle()">
-        Yorum yazmak için Google ile giriş yapın →
-      </span>
-    `;
-  }
-}
-
-async function submitComment() {
-  if (!selectedId || !currentUser) return;
-  const content = document.getElementById('comment-text')?.value?.trim();
-  if (!content) return;
-  if (kufurKontrol(content)) {
-    showToast('Uygunsuz içerik tespit edildi.');
-    return;
-  }
-  const { error } = await sb.from('comments').insert({
-    entry_id: selectedId,
-    user_id: currentUser.id,
-    user_name: currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0],
-    user_avatar: currentUser.user_metadata?.avatar_url || null,
-    content,
-  });
-  if (error) { showToast('Hata oluştu 😢'); return; }
-  showToast('Yorum eklendi! ✦');
-  loadComments(selectedId);
 }
 
 async function reportCurrent(){
