@@ -519,6 +519,163 @@
     border-left: 2px solid var(--parchment-deeper);
   }
 
+
+  /* COMMENTS */
+  .comments-section {
+    padding: 0.9rem 1.2rem;
+    border-top: 1px dashed var(--parchment-deeper);
+    margin-top: 0.5rem;
+  }
+
+  .comments-title {
+    font-family: 'Cinzel', serif;
+    font-size: 0.68rem;
+    color: var(--burgundy);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 0.7rem;
+    font-weight: 600;
+  }
+
+  .comment-item {
+    margin-bottom: 0.7rem;
+    padding-bottom: 0.7rem;
+    border-bottom: 1px dashed rgba(212,184,150,0.4);
+  }
+  .comment-item:last-child { border-bottom: none; margin-bottom: 0; }
+
+  .comment-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .comment-avatar {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 1px solid var(--gold);
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .comment-avatar-placeholder {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--burgundy);
+    color: var(--gold-pale);
+    font-size: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cinzel', serif;
+    flex-shrink: 0;
+  }
+
+  .comment-user {
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--burgundy);
+  }
+
+  .comment-date {
+    font-size: 0.72rem;
+    color: var(--ink-light);
+    opacity: 0.5;
+    font-style: italic;
+    margin-left: auto;
+  }
+
+  .comment-text {
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.92rem;
+    color: var(--ink-light);
+    line-height: 1.55;
+    font-weight: 300;
+  }
+
+  .comment-input-area {
+    margin-top: 0.7rem;
+  }
+
+  .comment-input {
+    width: 100%;
+    background: var(--parchment);
+    border: 1px solid var(--parchment-deeper);
+    border-radius: 2px;
+    padding: 0.45rem 0.7rem;
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.92rem;
+    color: var(--ink);
+    outline: none;
+    resize: none;
+    min-height: 58px;
+    transition: border-color 0.2s;
+  }
+  .comment-input:focus { border-color: var(--gold); }
+
+  .comment-submit {
+    margin-top: 0.4rem;
+    background: var(--burgundy);
+    color: var(--gold-pale);
+    border: none;
+    outline: 1px solid var(--gold);
+    outline-offset: -1px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    padding: 0.4rem 1rem;
+    border-radius: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    float: right;
+  }
+  .comment-submit:hover { background: var(--burgundy-light); color: #fff; }
+
+  .comment-empty {
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.88rem;
+    color: var(--ink-light);
+    font-style: italic;
+    opacity: 0.6;
+    text-align: center;
+    padding: 0.5rem 0;
+  }
+
+  .comment-login-prompt {
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.85rem;
+    color: var(--ink-light);
+    font-style: italic;
+    opacity: 0.7;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-style: dashed;
+  }
+  .comment-login-prompt:hover { color: var(--burgundy); }
+
+  /* MOBILE */
+  @media (max-width: 880px) {
+    .side-panel { order: -1; }
+    .detail-content { padding: 1rem; }
+    .about-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 600px) {
+    .panel-header { font-size: 0.62rem; padding: 0.55rem 0.9rem; }
+    .filter-bar { padding: 0.5rem 0.9rem; gap: 0.3rem; }
+    .filter-btn { font-size: 0.75rem; padding: 0.22rem 0.6rem; }
+    .chart-container { padding: 0.7rem; }
+    .hero-title { font-size: clamp(2.2rem, 10vw, 3.5rem); }
+    .hero-subtitle { font-size: 0.95rem; }
+    .hero-cta { font-size: 0.75rem; padding: 0.65rem 1.4rem; }
+    .auth-bar { top: 0.8rem; right: 1rem; }
+    .auth-btn { font-size: 0.72rem; padding: 0.22rem 0.6rem; }
+  }
+
 </style>
 </head>
 <body>
@@ -671,6 +828,11 @@
             <p class="suggestion-note">5 kişi aynı öneriyi yaparsa koordinat otomatik güncellenir.</p>
             <button class="suggestion-submit" onclick="submitSuggestion()">Öneriyi Gönder ✦</button>
           </div>
+        <div class="comments-section" id="comments-section" style="display:none;">
+          <div class="comments-title">💬 &nbsp;Yorumlar</div>
+          <div id="comments-list"></div>
+          <div class="comment-input-area" id="comment-input-area"></div>
+        </div>
         </div>
       </div>
 
@@ -1035,14 +1197,29 @@ function renderChart(){
       }
     }
 
-    if (chosen || isSel) {
-      const finalBox = chosen ? chosen.box : { x: Math.max(C.left, Math.min(C.right - lbW, x - lbW/2)), y: Math.max(C.top, Math.min(C.bottom - lbH, y - 26)), w: lbW, h: lbH };
-      const tx = chosen ? chosen.anchorX : finalBox.x + finalBox.w/2;
-      const ty = chosen ? chosen.anchorY : finalBox.y + 12.5;
-      labelPlaced.push(finalBox);
-      grp.appendChild(mk('rect',{x:finalBox.x,y:finalBox.y,width:finalBox.w,height:finalBox.h,fill:'rgba(253,250,244,0.96)',rx:'4',stroke:isSel?'rgba(184,146,42,0.8)':'rgba(200,160,100,0.34)','stroke-width':isSel?'1':'0.6'}));
-      const lb=mk('text',{x:tx,y:ty,'text-anchor':'middle','font-family':'Crimson Pro, Georgia, serif','font-size': isSel ? '12.2' : '11.2',fill:'#1f130d','font-weight':'700','paint-order':'stroke','stroke':'rgba(255,250,244,0.75)','stroke-width':'1.4','stroke-linejoin':'round'}); lb.textContent=lbText; grp.appendChild(lb);
+    // Always show label for selected, try smart placement for others
+    let finalBox, tx, ty;
+    if (chosen) {
+      finalBox = chosen.box;
+      tx = chosen.anchorX;
+      ty = chosen.anchorY;
+    } else if (isSel) {
+      // Force label above the point, clamped inside chart
+      const fx = Math.max(C.left + lbW/2, Math.min(C.right - lbW/2, x));
+      const fy = Math.max(C.top + lbH, y - r - 6);
+      finalBox = { x: fx - lbW/2, y: fy - lbH + 4, w: lbW, h: lbH };
+      tx = fx; ty = fy;
+    } else {
+      return; // skip label if no room and not selected
     }
+    // Clamp box strictly inside chart bounds
+    finalBox.x = Math.max(C.left, Math.min(C.right - finalBox.w, finalBox.x));
+    finalBox.y = Math.max(C.top, Math.min(C.bottom - finalBox.h, finalBox.y));
+    tx = finalBox.x + finalBox.w / 2;
+    ty = finalBox.y + finalBox.h - 4;
+    labelPlaced.push(finalBox);
+    grp.appendChild(mk('rect',{x:finalBox.x,y:finalBox.y,width:finalBox.w,height:finalBox.h,fill:'rgba(253,250,244,0.96)',rx:'4',stroke:isSel?'rgba(184,146,42,0.8)':'rgba(200,160,100,0.34)','stroke-width':isSel?'1':'0.6'}));
+    const lb=mk('text',{x:tx,y:ty,'text-anchor':'middle','font-family':'Crimson Pro, Georgia, serif','font-size': isSel ? '12.2' : '11.2',fill:'#1f130d','font-weight':'700','paint-order':'stroke','stroke':'rgba(255,250,244,0.75)','stroke-width':'1.4','stroke-linejoin':'round'}); lb.textContent=lbText; grp.appendChild(lb);
 
     grp.addEventListener('click',e=>{e.stopPropagation();selectEntry(entry.id);});
     grp.addEventListener('mouseenter',e=>showTooltip(e,entry.title,entry));
@@ -1072,6 +1249,7 @@ function selectEntry(id){
   document.getElementById('report-btn').textContent=isReported?'⚑ Bildirildi':'⚑ Bildir';
   document.getElementById('report-btn').classList.toggle('reported',isReported);
   renderVoteArea();
+  loadComments(id);
   renderChart(); renderSideLists();
 }
 
@@ -1126,6 +1304,74 @@ async function submitSuggestion(){
   showToast('Önerin gönderildi! 5 kişi aynı öneriyi yaparsa güncellenir. ✦');
   await loadEntries();
   selectEntry(selectedId);
+}
+
+// ── COMMENTS ─────────────────────────────────────
+async function loadComments(entryId) {
+  const { data } = await sb.from('comments')
+    .select('*')
+    .eq('entry_id', entryId)
+    .order('created_at', { ascending: true });
+
+  const section = document.getElementById('comments-section');
+  const list = document.getElementById('comments-list');
+  const inputArea = document.getElementById('comment-input-area');
+  section.style.display = 'block';
+
+  if (!data || data.length === 0) {
+    list.innerHTML = '<div class="comment-empty">Henüz yorum yok. İlk yorumu sen yap!</div>';
+  } else {
+    list.innerHTML = data.map(c => {
+      const date = new Date(c.created_at).toLocaleDateString('tr-TR', { day:'numeric', month:'short' });
+      const initial = (c.user_name||'?')[0].toUpperCase();
+      return `
+        <div class="comment-item">
+          <div class="comment-header">
+            ${c.user_avatar
+              ? `<img class="comment-avatar" src="${c.user_avatar}" alt="${c.user_name}">`
+              : `<div class="comment-avatar-placeholder">${initial}</div>`}
+            <span class="comment-user">${c.user_name || 'Misafir'}</span>
+            <span class="comment-date">${date}</span>
+          </div>
+          <div class="comment-text">${c.content}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  if (currentUser) {
+    inputArea.innerHTML = `
+      <textarea class="comment-input" id="comment-text" placeholder="Düşünceni yaz…"></textarea>
+      <button class="comment-submit" onclick="submitComment()">Gönder ✦</button>
+      <div style="clear:both"></div>
+    `;
+  } else {
+    inputArea.innerHTML = `
+      <span class="comment-login-prompt" onclick="signInWithGoogle()">
+        Yorum yazmak için Google ile giriş yapın →
+      </span>
+    `;
+  }
+}
+
+async function submitComment() {
+  if (!selectedId || !currentUser) return;
+  const content = document.getElementById('comment-text')?.value?.trim();
+  if (!content) return;
+  if (kufurKontrol(content)) {
+    showToast('Uygunsuz içerik tespit edildi.');
+    return;
+  }
+  const { error } = await sb.from('comments').insert({
+    entry_id: selectedId,
+    user_id: currentUser.id,
+    user_name: currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0],
+    user_avatar: currentUser.user_metadata?.avatar_url || null,
+    content,
+  });
+  if (error) { showToast('Hata oluştu 😢'); return; }
+  showToast('Yorum eklendi! ✦');
+  loadComments(selectedId);
 }
 
 async function reportCurrent(){
