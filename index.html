@@ -247,6 +247,114 @@
     color: var(--burgundy);
   }
 
+
+  /* ABOUT SECTION */
+  .about-section {
+    background: linear-gradient(to bottom, var(--parchment) 0%, var(--parchment-dark) 100%);
+    border-top: 1px solid var(--parchment-deeper);
+    margin-top: 1rem;
+    padding: 3rem 1.5rem 2.5rem;
+    position: relative;
+  }
+
+  .about-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--burgundy), var(--gold), var(--burgundy), transparent);
+    opacity: 0.4;
+  }
+
+  .about-inner {
+    max-width: 1000px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .about-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+    text-align: left;
+  }
+
+  .about-block {
+    background: rgba(253, 248, 240, 0.7);
+    border: 1px solid var(--parchment-deeper);
+    border-radius: 3px;
+    padding: 1.2rem 1.4rem;
+    position: relative;
+  }
+
+  .about-block::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to right, var(--burgundy), var(--gold));
+    opacity: 0.5;
+    border-radius: 3px 3px 0 0;
+  }
+
+  .about-block-title {
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: var(--burgundy);
+    text-transform: uppercase;
+    margin-bottom: 0.7rem;
+  }
+
+  .about-block-text {
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.97rem;
+    line-height: 1.7;
+    color: var(--ink-light);
+    font-weight: 300;
+  }
+
+  .about-email {
+    color: var(--burgundy);
+    font-weight: 600;
+    font-style: italic;
+    text-decoration: none;
+    border-bottom: 1px dashed var(--burgundy);
+    transition: color 0.2s;
+  }
+
+  .about-email:hover {
+    color: var(--gold);
+    border-color: var(--gold);
+  }
+
+  .about-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    max-width: 300px;
+    margin: 0 auto 1.2rem;
+  }
+
+  .footer-text {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 0.92rem;
+    color: var(--ink-light);
+    font-style: italic;
+    opacity: 0.6;
+    letter-spacing: 0.03em;
+  }
+
+  .footer-orn {
+    color: var(--gold);
+    font-size: 1rem;
+    margin: 0.5rem 0;
+    opacity: 0.45;
+    letter-spacing: 0.6em;
+  }
+
 </style>
 </head>
 <body>
@@ -400,11 +508,47 @@
     </div>
   </div>
 
-  <footer class="footer">
-    <div class="footer-orn">— ✦ —</div>
-    <p class="footer-text">"Her memleketin çayı başka, adı başka."</p>
-    <div class="footer-orn" style="margin-top:0.5rem">— ✦ —</div>
-  </footer>
+  <!-- ABOUT SECTION -->
+  <section class="about-section">
+    <div class="about-inner">
+
+      <div class="about-grid">
+
+        <div class="about-block">
+          <div class="about-block-title">☕ &nbsp;Bu Nedir?</div>
+          <p class="about-block-text">
+            Çay Atlası, Türkiye'nin zengin çay kültürünü ve bölgeden bölgeye değişen çay terimlerini bir araya getiren, topluluk tarafından büyütülen yaşayan bir haritadır. Amacı eğlenceli, kültürel ve tamamen katılımcı olmak.
+          </p>
+        </div>
+
+        <div class="about-block">
+          <div class="about-block-title">🔒 &nbsp;Gizlilik</div>
+          <p class="about-block-text">
+            Bu site hiçbir çerez (cookie) kullanmaz ve kişisel veri toplamaz. Giriş sistemi Google OAuth ile çalışır — şifreniz veya kişisel bilgileriniz bizimle paylaşılmaz. Oylarınız yalnızca tarayıcınızda hatırlanır.
+          </p>
+        </div>
+
+        <div class="about-block">
+          <div class="about-block-title">✦ &nbsp;Sponsorluk & İletişim</div>
+          <p class="about-block-text">
+            Her türlü soru, öneri ve sponsorluk için:<br>
+            <a class="about-email" href="mailto:tugsankoyuncu@gmail.com">tugsankoyuncu@gmail.com</a>
+          </p>
+        </div>
+
+      </div>
+
+      <div class="about-divider">
+        <div class="orn-line"></div>
+        <div class="orn-diamond"></div>
+        <div class="orn-line"></div>
+      </div>
+
+      <p class="footer-text">"Her memleketin çayı başka, adı başka."</p>
+      <div class="footer-orn" style="margin-top:0.6rem;margin-bottom:0">— ✦ —</div>
+
+    </div>
+  </section>
 </div>
 
 <!-- MODAL -->
@@ -676,7 +820,7 @@ function renderChart(){
       const ty = chosen ? chosen.anchorY : finalBox.y + 12.5;
       labelPlaced.push(finalBox);
       grp.appendChild(mk('rect',{x:finalBox.x,y:finalBox.y,width:finalBox.w,height:finalBox.h,fill:'rgba(253,250,244,0.96)',rx:'4',stroke:isSel?'rgba(184,146,42,0.8)':'rgba(200,160,100,0.34)','stroke-width':isSel?'1':'0.6'}));
-      const lb=mk('text',{x:tx,y:ty,'text-anchor':'middle','font-family':'Inter, system-ui, sans-serif','font-size': isSel ? '12.2' : '11.2',fill:'#1f130d','font-weight':'700','paint-order':'stroke','stroke':'rgba(255,250,244,0.75)','stroke-width':'1.4','stroke-linejoin':'round'}); lb.textContent=lbText; grp.appendChild(lb);
+      const lb=mk('text',{x:tx,y:ty,'text-anchor':'middle','font-family':'Crimson Pro, Georgia, serif','font-size': isSel ? '12.2' : '11.2',fill:'#1f130d','font-weight':'700','paint-order':'stroke','stroke':'rgba(255,250,244,0.75)','stroke-width':'1.4','stroke-linejoin':'round'}); lb.textContent=lbText; grp.appendChild(lb);
     }
 
     grp.addEventListener('click',e=>{e.stopPropagation();selectEntry(entry.id);});
