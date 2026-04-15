@@ -68,7 +68,9 @@
   .chart-container { padding:1.1rem; }
   .chart-wrapper { position:relative; }
   #tea-chart { width:100%; border-radius:2px; cursor:crosshair; display:block; }
-  .chart-tooltip { position:absolute; background:var(--ink); color:var(--gold-pale); font-family:'Crimson Pro',serif; font-size:0.82rem; font-weight:600; padding:0.3rem 0.65rem; border-radius:3px; pointer-events:none; white-space:nowrap; display:none; z-index:50; box-shadow:0 3px 12px rgba(0,0,0,0.35); border:1px solid var(--gold); }
+  .chart-help { padding:0.2rem 1.1rem 0.4rem; font-size:0.95rem; color:var(--ink-light); line-height:1.5; }
+  .chart-help strong { color:var(--burgundy); font-weight:700; }
+  .chart-tooltip { position:absolute; background:var(--ink); color:var(--gold-pale); font-family:'Crimson Pro',serif; font-size:0.9rem; font-weight:700; line-height:1.35; padding:0.42rem 0.8rem; border-radius:3px; pointer-events:none; white-space:nowrap; display:none; z-index:50; box-shadow:0 3px 12px rgba(0,0,0,0.35); border:1px solid var(--gold); }
   .chart-tooltip::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:var(--ink); }
 
   /* LOADING */
@@ -615,25 +617,70 @@ function renderChart(){
   if(currentFilter==='popular') vis=[...entries].sort((a,b)=>b.votes-a.votes).slice(0,8);
   else if(currentFilter==='newest') vis=[...entries].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,8);
   else if(currentFilter==='region'){ const s=new Set(); vis=entries.filter(e=>{ if(e.region&&!s.has(e.region)){s.add(e.region);return true;} return!e.region; }); }
+
+  const labelPlaced = [];
+  const offsets = [
+    {dx: 14, dy: -14},
+    {dx: 14, dy: 18},
+    {dx: -14, dy: -14},
+    {dx: -14, dy: 18},
+    {dx: 0, dy: -20},
+    {dx: 0, dy: 24},
+  ];
+
+  function intersects(a,b){
+    return !(a.x + a.w < b.x || b.x + b.w < a.x || a.y + a.h < b.y || b.y + b.h < a.y);
+  }
+
   vis.forEach(entry=>{
     const x=tempToX(entry.temp),y=brewToY(entry.brew);
     const col=teaColor(entry.brew);
     const isSel=entry.id===selectedId;
-    const r=isSel?13:9;
+    const isPopular = entry.votes >= 200;
+    const r=isSel?13:(isPopular?10:9);
     const grp=mk('g',{style:'cursor:pointer','data-id':entry.id});
     if(isSel){ grp.appendChild(mk('circle',{cx:x,cy:y,r:20,fill:'none',stroke:col,'stroke-width':'1.5',opacity:'0.35'})); grp.appendChild(mk('circle',{cx:x,cy:y,r:16,fill:col,opacity:'0.15'})); }
     grp.appendChild(mk('circle',{cx:x+2,cy:y+2.5,r:r+1,fill:'rgba(44,24,16,0.22)'}));
-    grp.appendChild(mk('circle',{cx:x,cy:y,r,fill:col,stroke:isSel?'#b8922a':'rgba(255,255,255,0.75)','stroke-width':isSel?'2.5':'1.5'}));
+    grp.appendChild(mk('circle',{cx:x,cy:y,r,fill:col,stroke:isSel?'#b8922a':'rgba(255,255,255,0.82)','stroke-width':isSel?'2.5':'1.7'}));
     grp.appendChild(mk('circle',{cx:x-r*0.28,cy:y-r*0.28,r:r*0.28,fill:'rgba(255,255,255,0.45)'}));
     if(entry.votes>=500){ grp.appendChild(mk('circle',{cx:x+r,cy:y-r,r:6.5,fill:'#b8922a',stroke:'#fff','stroke-width':'1.2'})); const star=mk('text',{x:x+r,y:y-r+3.5,'text-anchor':'middle','font-size':'7',fill:'#fff','font-weight':'700'}); star.textContent='★'; grp.appendChild(star); }
     else if(entry.votes>=200){ grp.appendChild(mk('circle',{cx:x+r,cy:y-r,r:5.5,fill:'#6b1a1a',stroke:'#fff','stroke-width':'1'})); const up=mk('text',{x:x+r,y:y-r+3.5,'text-anchor':'middle','font-size':'7',fill:'#e8cc80','font-weight':'700'}); up.textContent='↑'; grp.appendChild(up); }
-    const lbY=y>C.bottom-32?y-r-6:y+r+13;
-    const lbText=entry.title.length>12?entry.title.slice(0,11)+'…':entry.title;
-    const lbW=Math.max(44,lbText.length*6.2);
-    grp.appendChild(mk('rect',{x:x-lbW/2,y:lbY-10,width:lbW,height:13,fill:'rgba(253,250,244,0.9)',rx:'2',stroke:'rgba(200,160,100,0.3)','stroke-width':'0.5'}));
-    const lb=mk('text',{x,y:lbY,'text-anchor':'middle','font-family':'Crimson Pro,serif','font-size':'9.5',fill:'#2c1810','font-weight':'600'}); lb.textContent=lbText; grp.appendChild(lb);
+
+    const fullLabel = entry.title;
+    const shortLabel = entry.title.length>16?entry.title.slice(0,15)+'…':entry.title;
+    const showFullLabel = isSel || entry.votes >= 40;
+    const lbText = showFullLabel ? fullLabel : shortLabel;
+    const lbW = Math.max(60, lbText.length * 7.1);
+    const lbH = 18;
+    let chosen = null;
+
+    for (const off of offsets) {
+      const anchorX = x + off.dx;
+      const anchorY = y + off.dy;
+      const box = {
+        x: anchorX - lbW / 2,
+        y: anchorY - 12,
+        w: lbW,
+        h: lbH
+      };
+      if (box.x < C.left || box.x + box.w > C.right || box.y < C.top || box.y + box.h > C.bottom) continue;
+      if (!labelPlaced.some(p => intersects(box, p))) {
+        chosen = { box, anchorX, anchorY };
+        break;
+      }
+    }
+
+    if (chosen || isSel) {
+      const finalBox = chosen ? chosen.box : { x: Math.max(C.left, Math.min(C.right - lbW, x - lbW/2)), y: Math.max(C.top, Math.min(C.bottom - lbH, y - 26)), w: lbW, h: lbH };
+      const tx = chosen ? chosen.anchorX : finalBox.x + finalBox.w/2;
+      const ty = chosen ? chosen.anchorY : finalBox.y + 12.5;
+      labelPlaced.push(finalBox);
+      grp.appendChild(mk('rect',{x:finalBox.x,y:finalBox.y,width:finalBox.w,height:finalBox.h,fill:'rgba(253,250,244,0.96)',rx:'4',stroke:isSel?'rgba(184,146,42,0.8)':'rgba(200,160,100,0.34)','stroke-width':isSel?'1':'0.6'}));
+      const lb=mk('text',{x:tx,y:ty,'text-anchor':'middle','font-family':'Inter, system-ui, sans-serif','font-size': isSel ? '12.2' : '11.2',fill:'#1f130d','font-weight':'700','paint-order':'stroke','stroke':'rgba(255,250,244,0.75)','stroke-width':'1.4','stroke-linejoin':'round'}); lb.textContent=lbText; grp.appendChild(lb);
+    }
+
     grp.addEventListener('click',e=>{e.stopPropagation();selectEntry(entry.id);});
-    grp.addEventListener('mouseenter',e=>showTooltip(e,entry.title));
+    grp.addEventListener('mouseenter',e=>showTooltip(e,entry.title,entry));
     grp.addEventListener('mouseleave',hideTooltip);
     svg.appendChild(grp);
   });
@@ -643,7 +690,7 @@ function renderChart(){
 }
 
 // ── TOOLTIP ──────────────────────────────────────
-function showTooltip(e,name){ const t=document.getElementById('tooltip'); const w=e.target.closest('.chart-wrapper'); const wr=w.getBoundingClientRect(); t.textContent=name; t.style.display='block'; t.style.left=(e.clientX-wr.left-t.offsetWidth/2)+'px'; t.style.top=(e.clientY-wr.top-42)+'px'; }
+function showTooltip(e,name,entry){ const t=document.getElementById('tooltip'); const w=e.target.closest('.chart-wrapper'); const wr=w.getBoundingClientRect(); t.innerHTML = entry ? `<strong>${name}</strong><br><span style="font-weight:400;opacity:0.9">${BREW_LABELS[Math.round(entry.brew)]} · ${entry.temp}°C</span>` : name; t.style.display='block'; t.style.left=(e.clientX-wr.left-t.offsetWidth/2)+'px'; t.style.top=(e.clientY-wr.top-52)+'px'; }
 function hideTooltip(){ document.getElementById('tooltip').style.display='none'; }
 
 // ── SELECT ───────────────────────────────────────
