@@ -166,9 +166,9 @@
 
   /* AUTH BAR */
   .auth-bar {
-    position: absolute;
-    top: 1rem;
-    right: 1.5rem;
+    position: fixed;
+    top: 1.4rem;
+    right: 2.8rem;
     display: flex;
     align-items: center;
     gap: 0.6rem;
@@ -353,6 +353,61 @@
     margin: 0.5rem 0;
     opacity: 0.45;
     letter-spacing: 0.6em;
+  }
+
+
+  /* LOGIN NUDGE */
+  .login-nudge {
+    background: var(--parchment-dark);
+    border: 1px solid var(--parchment-deeper);
+    border-radius: 3px;
+    padding: 0.7rem 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .login-nudge-text {
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--ink-light);
+  }
+
+  .login-nudge-text strong {
+    color: var(--burgundy);
+    font-size: 0.9rem;
+  }
+
+  .login-nudge-text span {
+    opacity: 0.7;
+    font-style: italic;
+  }
+
+  .login-nudge-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--burgundy);
+    color: var(--gold-pale);
+    border: none;
+    outline: 1.5px solid var(--gold);
+    outline-offset: -2px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    padding: 0.45rem 1rem;
+    border-radius: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    align-self: flex-start;
+  }
+
+  .login-nudge-btn:hover {
+    background: var(--burgundy-light);
+    color: #fff;
   }
 
 </style>
