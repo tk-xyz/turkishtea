@@ -410,6 +410,115 @@
     color: #fff;
   }
 
+
+  /* DISLIKE / SUGGESTION */
+  .dislike-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: var(--parchment);
+    border: 1px solid var(--parchment-deeper);
+    color: var(--ink-light);
+    padding: 0.38rem 0.85rem;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .dislike-btn:hover, .dislike-btn.disliked {
+    background: #5a3a1a;
+    color: var(--gold-pale);
+    border-color: #5a3a1a;
+  }
+
+  .suggestion-box {
+    margin-top: 0.75rem;
+    background: var(--parchment-dark);
+    border: 1px solid var(--parchment-deeper);
+    border-radius: 3px;
+    padding: 0.9rem 1rem;
+    display: none;
+  }
+  .suggestion-box.open { display: block; }
+
+  .suggestion-title {
+    font-family: 'Cinzel', serif;
+    font-size: 0.68rem;
+    color: var(--burgundy);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+    font-weight: 600;
+  }
+
+  .suggestion-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    align-items: center;
+  }
+
+  .suggestion-label {
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.82rem;
+    color: var(--ink-light);
+    min-width: 80px;
+    font-style: italic;
+  }
+
+  .suggestion-select {
+    flex: 1;
+    background: var(--parchment);
+    border: 1px solid var(--parchment-deeper);
+    border-radius: 2px;
+    padding: 0.28rem 0.5rem;
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.88rem;
+    color: var(--ink);
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .suggestion-select:focus {
+    border-color: var(--gold);
+  }
+
+  .suggestion-submit {
+    width: 100%;
+    background: #5a3a1a;
+    color: var(--gold-pale);
+    border: none;
+    outline: 1px solid var(--gold);
+    outline-offset: -1px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    padding: 0.45rem;
+    border-radius: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+    margin-top: 0.4rem;
+    transition: all 0.2s;
+  }
+  .suggestion-submit:hover {
+    background: #7a4a28;
+    color: #fff;
+  }
+
+  .suggestion-note {
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.82rem;
+    color: var(--ink-light);
+    font-style: italic;
+    margin-top: 0.5rem;
+    padding: 0.3rem 0.5rem;
+    border-left: 2px solid var(--parchment-deeper);
+  }
+
 </style>
 </head>
 <body>
@@ -533,8 +642,34 @@
             <button class="vote-btn" id="vote-btn" onclick="voteForCurrent()">♥ Katılıyorum</button>
             <span class="vote-count" id="vote-count"></span>
           </div>
-          <div style="margin-top:0.6rem;">
+          <div style="margin-top:0.6rem;display:flex;gap:0.5rem;align-items:center;">
+            <button class="dislike-btn" id="dislike-btn" onclick="toggleSuggestion()">↓ Katılmıyorum</button>
             <button class="report-btn" id="report-btn" onclick="reportCurrent()">⚑ Bildir</button>
+          </div>
+          <div class="suggestion-box" id="suggestion-box">
+            <div class="suggestion-title">Koordinatı Düzelt</div>
+            <div class="suggestion-row">
+              <span class="suggestion-label">Sıcaklık:</span>
+              <select class="suggestion-select" id="sug-temp">
+                <option value="0">0°C — Buz</option>
+                <option value="20">20°C — Serin</option>
+                <option value="30">30°C — Ilık</option>
+                <option value="50">50°C — Sıcak</option>
+                <option value="70">70°C — Kaynar</option>
+              </select>
+            </div>
+            <div class="suggestion-row">
+              <span class="suggestion-label">Dem Miktarı:</span>
+              <select class="suggestion-select" id="sug-brew">
+                <option value="0">0 Dem</option>
+                <option value="1">¼ Demli</option>
+                <option value="2">½ Demli</option>
+                <option value="3">¾ Demli</option>
+                <option value="4">Full Dem</option>
+              </select>
+            </div>
+            <p class="suggestion-note">5 kişi aynı öneriyi yaparsa koordinat otomatik güncellenir.</p>
+            <button class="suggestion-submit" onclick="submitSuggestion()">Öneriyi Gönder ✦</button>
           </div>
         </div>
       </div>
@@ -955,6 +1090,44 @@ async function voteForCurrent(){
 }
 
 // ── REPORT ───────────────────────────────────────
+function toggleSuggestion(){
+  const box = document.getElementById('suggestion-box');
+  const btn = document.getElementById('dislike-btn');
+  const isOpen = box.classList.contains('open');
+  box.classList.toggle('open', !isOpen);
+  btn.classList.toggle('disliked', !isOpen);
+  // Prefill with current entry values
+  if(!isOpen && selectedId){
+    const e = entries.find(x=>x.id===selectedId);
+    if(e){
+      document.getElementById('sug-temp').value = e.temp;
+      document.getElementById('sug-brew').value = Math.round(e.brew);
+    }
+  }
+}
+
+async function submitSuggestion(){
+  if(!selectedId) return;
+  if(!currentUser){ showToast('Öneri göndermek için giriş yapın.'); signInWithGoogle(); return; }
+  const sugTemp = parseInt(document.getElementById('sug-temp').value);
+  const sugBrew = parseFloat(document.getElementById('sug-brew').value);
+  const e = entries.find(x=>x.id===selectedId);
+  if(e && sugTemp === e.temp && sugBrew === e.brew){
+    showToast('Mevcut koordinatla aynı — farklı bir değer seçin.'); return;
+  }
+  const { error } = await sb.from('suggestions').insert({
+    entry_id: selectedId,
+    suggested_temp: sugTemp,
+    suggested_brew: sugBrew,
+  });
+  if(error){ showToast('Hata oluştu 😢'); return; }
+  document.getElementById('suggestion-box').classList.remove('open');
+  document.getElementById('dislike-btn').classList.remove('disliked');
+  showToast('Önerin gönderildi! 5 kişi aynı öneriyi yaparsa güncellenir. ✦');
+  await loadEntries();
+  selectEntry(selectedId);
+}
+
 async function reportCurrent(){
   if(!selectedId)return;
   if(reportedIds.has(selectedId)){ showToast('Bu terimi zaten bildirdiniz.'); return; }
