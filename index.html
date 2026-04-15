@@ -1197,29 +1197,27 @@ function renderChart(){
       }
     }
 
-    // Always show label for selected, try smart placement for others
+    // Always show label — use smart placement if possible, fallback to clamped position
     let finalBox, tx, ty;
     if (chosen) {
       finalBox = chosen.box;
       tx = chosen.anchorX;
       ty = chosen.anchorY;
-    } else if (isSel) {
-      // Force label above the point, clamped inside chart
-      const fx = Math.max(C.left + lbW/2, Math.min(C.right - lbW/2, x));
-      const fy = Math.max(C.top + lbH, y - r - 6);
-      finalBox = { x: fx - lbW/2, y: fy - lbH + 4, w: lbW, h: lbH };
-      tx = fx; ty = fy;
     } else {
-      return; // skip label if no room and not selected
+      // Fallback: place above point, clamped strictly inside chart
+      const fx = Math.max(C.left + lbW/2 + 2, Math.min(C.right - lbW/2 - 2, x));
+      const fy = y - r - 8;
+      finalBox = {
+        x: Math.max(C.left + 2, Math.min(C.right - lbW - 2, fx - lbW/2)),
+        y: Math.max(C.top + 2, Math.min(C.bottom - 16, fy - 10)),
+        w: lbW, h: 14
+      };
+      tx = finalBox.x + finalBox.w / 2;
+      ty = finalBox.y + 11;
     }
-    // Clamp box strictly inside chart bounds
-    finalBox.x = Math.max(C.left, Math.min(C.right - finalBox.w, finalBox.x));
-    finalBox.y = Math.max(C.top, Math.min(C.bottom - finalBox.h, finalBox.y));
-    tx = finalBox.x + finalBox.w / 2;
-    ty = finalBox.y + finalBox.h - 4;
     labelPlaced.push(finalBox);
-    grp.appendChild(mk('rect',{x:finalBox.x,y:finalBox.y,width:finalBox.w,height:finalBox.h,fill:'rgba(253,250,244,0.96)',rx:'4',stroke:isSel?'rgba(184,146,42,0.8)':'rgba(200,160,100,0.34)','stroke-width':isSel?'1':'0.6'}));
-    const lb=mk('text',{x:tx,y:ty,'text-anchor':'middle','font-family':'Crimson Pro, Georgia, serif','font-size': isSel ? '12.2' : '11.2',fill:'#1f130d','font-weight':'700','paint-order':'stroke','stroke':'rgba(255,250,244,0.75)','stroke-width':'1.4','stroke-linejoin':'round'}); lb.textContent=lbText; grp.appendChild(lb);
+    grp.appendChild(mk('rect',{x:finalBox.x,y:finalBox.y,width:finalBox.w,height:14,fill:'rgba(253,250,244,0.96)',rx:'3',stroke:isSel?'rgba(184,146,42,0.8)':'rgba(200,160,100,0.34)','stroke-width':isSel?'1':'0.6'}));
+    const lb=mk('text',{x:tx,y:ty,'text-anchor':'middle','font-family':'Crimson Pro, Georgia, serif','font-size': isSel ? '11.5' : '10.5',fill:'#1f130d','font-weight':'700','paint-order':'stroke','stroke':'rgba(255,250,244,0.75)','stroke-width':'1.4','stroke-linejoin':'round'}); lb.textContent=lbText; grp.appendChild(lb);
 
     grp.addEventListener('click',e=>{e.stopPropagation();selectEntry(entry.id);});
     grp.addEventListener('mouseenter',e=>showTooltip(e,entry.title,entry));
