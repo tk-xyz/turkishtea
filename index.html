@@ -164,14 +164,12 @@
 
   /* AUTH BAR */
   .auth-bar {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    gap: 0.8rem;
-    max-width: 1160px;
-    margin: 0 auto;
-    padding: 0.5rem 1.5rem 0;
-    position: relative;
+    gap: 0.6rem;
     z-index: 10;
   }
 
@@ -311,6 +309,7 @@
     </button>
   </div>
   <section class="hero">
+    <div id="auth-bar"></div>
     <svg class="hero-arch" viewBox="0 0 700 80" xmlns="http://www.w3.org/2000/svg">
       <path d="M20,75 Q350,5 680,75" stroke="#6b1a1a" stroke-width="1.5" fill="none" opacity="0.35"/>
       <path d="M50,75 Q350,15 650,75" stroke="#b8922a" stroke-width="0.8" fill="none" opacity="0.3"/>
@@ -508,7 +507,7 @@ function saveReported(){ localStorage.setItem('reported', JSON.stringify([...rep
 async function signInWithGoogle() {
   await sb.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: window.location.href }
+    options: { redirectTo: 'https://tk-xyz.github.io/turkishtea/' }
   });
 }
 
